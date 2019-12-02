@@ -1,0 +1,34 @@
+provider "digitalocean" {
+  token = "{{ digitalocean_token }}"
+}
+
+data "digitalocean_ssh_key" "ssh_key" {
+  name = "{{ digitalocean_ssh_key_name }}"
+}
+
+provider "cloudflare" {
+  version = "~> 2.0"
+  email   = "{{ cloudflare_email }}"
+  api_key = "{{ cloudflare_key }}"
+}
+
+data "cloudflare_zones" "filtered" {
+  filter {
+    name   = "{{ cloudflare_zone_name }}"
+  }
+}
+
+terraform {
+  backend "s3" {
+    access_key = "{{ s3_access_key }}"
+    secret_key = "{{ s3_secret_key }}"
+    bucket = "{{ s3_bucket }}"
+    region = "{{ s3_region }}"
+    key = "{{ s3_state_key }}"
+    endpoint = "{{ s3_endpoint }}"
+    skip_region_validation      = true
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    force_path_style            = true
+  }
+}

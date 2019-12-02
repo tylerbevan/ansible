@@ -1,22 +1,16 @@
 ---
+- name: Create Terraform backend config
+  delegate_to: localhost
+  template:
+    src: config.tf.j2
+    dest: "{{ playbook_dir }}/terraform-envs/envs/{{ tf_env }}/config.tf"
 - name: Call Terraform
   delegate_to: localhost
   terraform:
-    project_path: "terraform-envs/envs/{{ tf_env }}"
+    project_path: "{{ playbook_dir }}/terraform-envs/envs/{{ tf_env }}"
     state: present
+    force_init: true
   register: tf_output
-  environment:
-    TF_VAR_digitalocean_token: "{{ digitalocean_token }}"
-    TF_VAR_cloudflare_email: "{{ cloudflare_email }}"
-    TF_VAR_cloudflare_key: "{{ cloudflare_key }}"
-    TF_VAR_digitalocean_ssh_key_name: "{{ digitalocean_ssh_key_name }}"
-    TF_VAR_cloudflare_zone_name: "{{ cloudflare_zone_name }}"
-    TF_VAR_s3_access_key: "{{ s3_access_key }}"
-    TF_VAR_s3_secret_key: "{{ s3_secret_key }}"
-    TF_VAR_s3_bucket: "{{ s3_bucket }}"
-    TF_VAR_s3_region: "{{ s3_region }}"
-    TF_VAR_s3_state_key: "{{ s3_state_key }}"
-    TF_VAR_s3_endpoint: "{{ s3_endpoint }}"
 
 - set_fact:
     ansible_host: "{{ tf_output['outputs']['ip_addr']['value'] }}"
