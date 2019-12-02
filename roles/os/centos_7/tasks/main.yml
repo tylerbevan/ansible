@@ -1,0 +1,41 @@
+---
+- name: Enable EPEL repository
+  yum:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+    state: present
+
+- name: Update all packages to latest
+  yum:
+    name: "*"
+    state: latest
+
+- name: Install common packages
+  yum:
+    name:
+      - vim-enhanced
+      - bsdtar
+      - zip
+      - unzip
+      - p7zip
+      - tmux
+      - wget
+      - rsync
+      - python-pip
+      - python-firewall
+      - firewalld
+
+- name: Enable FirewallD
+  systemd:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Check if kernel version changed
+  shell: needs-restarting -r
+  changed_when: false
+  failed_when: false
+  register: kernel_check
+
+- name: Reboot due to kernel update
+  reboot:
+  when: ((kernel_check.stdout_lines | length) > 0) and (kernel_check.rc == 1)

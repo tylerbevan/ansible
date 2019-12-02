@@ -1,0 +1,8 @@
+---
+- name: KF2 Server UP
+  hosts: killingfloor2
+  gather_facts: false
+  roles:
+    - vm/droplet
+    - os/fedora_30
+    - app/kf2

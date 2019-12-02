@@ -1,0 +1,25 @@
+version: '2.1'
+
+services:
+  recipes:
+    image: nginx
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - VIRTUAL_HOST=recipes.tbevan.us
+      - VIRTUAL_PORT=8080
+    volumes:
+            - /opt/recipes/output:/usr/share/nginx/html:ro
+
+  proxy:
+    hostname: proxy
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/htpasswd:/etc/nginx/htpasswd:ro
+      - /opt/tbevan.us.crt:/etc/nginx/certs/tbevan.us.crt:ro
+      - /opt/tbevan.us.key:/etc/nginx/certs/tbevan.us.key:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro

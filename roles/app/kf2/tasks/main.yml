@@ -1,0 +1,145 @@
+---
+- name: Set SELinux Permissive
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Install steamcmd deps
+  dnf:
+    name:
+      - glibc.i686 
+      - libstdc++.i686 
+      - wget
+      - firewalld
+      - nginx
+    state: latest
+    update_cache: yes
+
+- name: Start FirewallD
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Open KF2 server ports
+  firewalld:
+    zone: public
+    state: enabled
+    port: "{{item}}"
+    permanent: yes
+    immediate: yes
+  with_items:
+    - "7777/udp"
+    - "27015/udp"
+    - "20560/udp"
+    - "443/tcp"
+
+- name: Create steam user
+  user:
+    name: steam
+    state: present
+    home: "/home/steam"
+    create_home: yes
+
+- name: Install service file
+  copy:
+    src: killingfloor.service
+    dest: /etc/systemd/system/killingfloor.service
+  register: servicefile
+
+- name: Start service
+  systemd:
+    name: killingfloor
+    daemon_reload: yes
+    enabled: yes
+    state: started
+
+- name: Stop service
+  systemd:
+    name: killingfloor
+    daemon_reload: yes
+    enabled: yes
+    state: stopped
+
+- become_user: steam
+  become: yes
+  block:
+    - name: Make SteamCMD dir
+      file:
+        path: /home/steam/steamcmd
+        state: directory
+
+    - name: Get SteamCMD
+      unarchive:
+        remote_src: yes
+        src: "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
+        dest: /home/steam/steamcmd
+
+    - name: Install update script
+      copy:
+        src: update.txt
+        dest: /home/steam/update.txt
+    
+    - name: Update KF2
+      shell: /home/steam/steamcmd/steamcmd.sh +runscript /home/steam/update.txt
+
+    - name: Copy Web config
+      copy:
+        remote_src: true
+        src: /home/steam/killingfloor2/KFGame/Config/DefaultWeb.ini
+        dest: /home/steam/killingfloor2/KFGame/Config/KFWeb.ini
+        force: no
+
+    - name: Enable Web Admin
+      lineinfile:
+        path: /home/steam/killingfloor2/KFGame/Config/KFWeb.ini
+        regex: "^bEnabled=.*"
+        line: "bEnabled=true"
+
+    - name: Enable Web Admin
+      lineinfile:
+        path: /home/steam/killingfloor2/KFGame/Config/LinuxServer-KFEngine.ini
+        regex: "^bUsedForTakeover=.*"
+        line: "bUsedForTakeover=FALSE"
+    
+- name: Enable/Start service
+  systemd:
+    name: killingfloor
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Generate an OpenSSL private key.
+  openssl_privatekey:
+    path: /etc/pki/tls/private/kf2.tbevan.us.key
+
+- name: Generate an OpenSSL CSR.
+  openssl_csr:
+    path: /etc/pki/tls/private/kf2.tbevan.us.csr
+    privatekey_path: /etc/pki/tls/private/kf2.tbevan.us.key
+    common_name: kf2.tbevan.us
+
+- name: Generate a Self Signed OpenSSL certificate.
+  openssl_certificate:
+    path: /etc/pki/tls/certs/kf2.tbevan.us.pem
+    privatekey_path: /etc/pki/tls/private/kf2.tbevan.us.key
+    csr_path: /etc/pki/tls/private/kf2.tbevan.us.csr
+    provider: selfsigned
+
+- name: Configure Nginx
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  register: nginxconf
+
+- name: Enable Nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Reload Nginx
+  systemd:
+    name: nginx
+    state: reloaded
+  when: nginxconf is changed
