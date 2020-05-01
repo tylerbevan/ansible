@@ -1,0 +1,58 @@
+---
+- name: Set SELinux Permissive
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Install steamcmd deps
+  dnf:
+    name:
+      - java-1.8.0-openjdk
+      - firewalld
+    state: present
+    update_cache: yes
+
+- name: Start FirewallD
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Open starmade server ports
+  firewalld:
+    zone: public
+    state: enabled
+    port: "{{item}}"
+    permanent: yes
+    immediate: yes
+  with_items:
+    - "4242/udp"
+
+- name: Create starmade user
+  user:
+    name: starmade
+    state: present
+    home: "/home/starmade"
+    create_home: yes
+
+- name: Get starter jar
+  get_url:
+    url: "http://files.star-made.org/StarMade-Starter.jar"
+    dest: "/home/starmade/StarMade-Starter.jar"
+    checksum: "sha256:8bc53ca15e07770e5ff125614c623a4e27d6ce357e871985a3204ae17f9de09a"
+    mode: "0440"
+    owner: starmade
+    group: starmade
+
+- name: Install service file
+  copy:
+    src: starmade.service
+    dest: /etc/systemd/system/starmade.service
+  register: servicefile
+
+- name: Enable/Start service
+  systemd:
+    name: starmade.service
+    daemon_reload: yes
+    enabled: yes
+    state: restarted

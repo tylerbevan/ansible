@@ -1,13 +1,4 @@
 ---
-- name: Install Docker Repo
-  yum_repository:
-    name: docker-ce-stable
-    description: Docker CE Stable - $basearch
-    baseurl: 'https://download.docker.com/linux/centos/7/$basearch/stable'
-    enabled: true
-    gpgcheck: true
-    gpgkey: 'https://download.docker.com/linux/centos/gpg'
-
 - name: Install RPM packages
   yum:
     name:
@@ -19,6 +10,7 @@
       - binutils
       - python3
       - python3-devel
+      - python-devel
     state: present
 
 - name: Upgrade PIP

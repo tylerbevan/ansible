@@ -1,0 +1,14 @@
+[Unit]
+Description=StarMade dedicated server
+After=network.target
+
+[Service]
+Type=simple
+User=starmade
+WorkingDirectory=/home/starmade
+ExecPre=/usr/bin/java -jar /home/starmade/StarMade-Starter.jar -nogui
+ExecStart=/bin/bash /home/starmade/StarMade/StarMade-dedicated-server-linux.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

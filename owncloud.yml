@@ -1,8 +1,0 @@
----
-- name: OwnCloud
-  hosts: owncloud
-  gather_facts: false
-  roles:
-    - vm/droplet
-    - os/centos_7
-    - app/owncloud

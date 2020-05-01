@@ -1,0 +1,10 @@
+[Unit]
+Description=Teleport Remote Access Server
+After=network.target network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/teleport --roles=node --auth-server=gatekeeper.tbevan.us
+
+[Install]
+WantedBy=multi-user.target

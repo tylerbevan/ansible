@@ -1,0 +1,24 @@
+teleport:
+  nodename: gatekeeper.tbevan.us
+  data_dir: /var/lib/teleport
+  pid_file: /var/run/teleport.pid
+  auth_token: "347f0677c780e458e8bacb67e8e7805d"
+  auth_servers:
+  - gatekeeper.tbevan.us:3025
+  connection_limits:
+    max_connections: 50
+    max_users: 5
+  log:
+    output: stderr
+    severity: INFO
+  ca_pin: "sha256:98a7247f6b2163286e34bd21f645eba0da397636fc2e24720048ecf244de238c"
+ssh_service:
+  enabled: "yes"
+  commands:
+  - name: hostname
+    command: [/usr/bin/hostname]
+    period: 1m0s
+  - name: arch
+    command: [/usr/bin/uname, -p]
+    period: 1h0m0s
+

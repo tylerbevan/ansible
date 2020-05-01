@@ -11,13 +11,29 @@
     state: present
     force_init: true
   register: tf_output
-
+    
 - set_fact:
     ansible_host: "{{ tf_output['outputs']['ip_addr']['value'] }}"
+
+- raw: dnf install -y python3
 
 - name: Wait for VM to be up
   wait_for_connection:
 
-- raw: yum install -y python3
-
 - setup:
+
+- name: Install DO Agent Repo
+  yum_repository:
+    name: sonar
+    description: do agent
+    baseurl: https://repos.insights.digitalocean.com/yum/do-agent/$basearch
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://repos.insights.digitalocean.com/sonar-agent.asc
+
+- name: Install DO Agent
+  yum:
+    name: "do-agent"
+    state: present
+    update_cache: true
+

@@ -1,8 +1,8 @@
 ---
-- name: KF2 Server UP
-  hosts: killingfloor2
+- name: Starmade Server
+  hosts: starmade
   gather_facts: false
   roles:
     - vm/droplet
     - os/centos_8
-    - app/kf2
+    - app/starmade

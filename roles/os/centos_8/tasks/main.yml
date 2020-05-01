@@ -1,0 +1,39 @@
+---
+- name: Enable EPEL repository
+  dnf:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+    state: present
+
+- name: Enable Powertools
+  command: dnf config-manager --set-enabled PowerTools
+  when: true
+  changed_when: false
+
+- name: Update all packages to latest
+  dnf:
+    name: "*"
+    state: latest
+  notify: Restart Machine
+
+- name: Install common packages
+  dnf:
+    name:
+      - vim-enhanced
+      - bsdtar
+      - zip
+      - unzip
+      - p7zip
+      - tmux
+      - wget
+      - rsync
+      - python3-pip
+      - python3-firewall
+      - firewalld
+
+- name: Enable FirewallD
+  systemd:
+    name: firewalld
+    state: started
+    enabled: true
+
+

@@ -2,29 +2,25 @@
 killingfloor2:
   hosts:
     kf2.tbevan.us:
-owncloud:
-  hosts:
-    cloud.tbevan.us:
 www:
   hosts:
     www.tbevan.us:
-
-# OS Groups
-fedora_30:
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
+starmade:
   hosts:
-    kf2.tbevan.us:
+    starmade.tbevan.us:
+
 centos_7:
   hosts:
-    cloud.tbevan.us:
     www.tbevan.us:
+centos_8:
+  hosts:
+    starmade.tbevan.us:
+    kf2.tbevan.us
 
-# VM Groups
 digitalocean:
   vars:
     ansible_user: root
   children:
     www:
-    owncloud:
     killingfloor2:
+    starmade:
